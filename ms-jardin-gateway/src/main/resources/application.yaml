@@ -1,0 +1,24 @@
+server:
+  port: 9090
+
+spring:
+  application:
+    name: ms-jardin-gateway
+  cloud:
+    gateway:
+      routes:
+        # --- RUTA 1: Catálogo ---
+        - id: ruta-catalogo
+          uri: http://localhost:9080
+          predicates:
+            - Path=/api/v1/productos, /api/v1/productos/**
+          filters:
+            - AddRequestHeader=X-Servicio-Destino, Catalogo
+
+        # --- RUTA 2: Ventas ---
+        - id: ruta-ventas
+          uri: http://localhost:9081
+          predicates:
+            - Path=/api/v1/ventas, /api/v1/ventas/**
+          filters:
+            - AddRequestHeader=X-Servicio-Destino, Ventas
