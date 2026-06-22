@@ -1,5 +1,6 @@
 package cl.duoc.ms_jardin_catalogo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -18,6 +19,7 @@ public class Producto {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "categoria_id", nullable = false)
+    @JsonIgnore // <--- ESTO EVITA EL BUCLE INFINITO
     private Categoria categoria;
 
     @Column(name = "precio", nullable = false)
