@@ -1,54 +1,27 @@
-# Evaluación Parcial 3 - Sistema de Ventas y Catálogo "Jardín" 🌿
+# Proyecto de Jardinería - EP3
 
-**Institución:** Duoc UC  
-**Autor:** Angelo Pastene Acevedo  
-**Rol:** Desarrollo Full Stack / Arquitectura de Microservicios  
+## Descripción del proyecto
+Sistema de gestión para el catálogo de productos y ventas de un jardín, diseñado con microservicios (Catálogo, Ventas y Gateway) para una arquitectura escalable.
 
-## 📌 Descripción del Proyecto
-Este proyecto implementa una arquitectura de microservicios para la gestión de un catálogo de productos botánicos y el procesamiento de ventas (Carrito de Compras). El sistema asegura la consistencia de datos, comunicación síncrona entre servicios, y un enrutamiento centralizado.
+## Integrantes del equipo
+* Angelo Pastene Acevedo
 
-## 🛠️ Tecnologías Utilizadas
-* **Lenguaje:** Java 17
-* **Framework:** Spring Boot (v4.0.6 LTS)
-* **Arquitectura:** Spring Cloud Gateway, Spring Cloud OpenFeign
-* **Persistencia:** Spring Data JPA, MySQL 8
-* **Documentación:** Swagger / OpenAPI
-* **Testing:** JUnit 5, Mockito
+## Aporte realizado por cada integrante
+* Angelo Pastene Acevedo: Desarrollo completo de microservicios, configuración de base de datos, implementación de API Gateway y despliegue de soluciones.
 
-## 🏗️ Arquitectura y Puertos
-El ecosistema está compuesto por tres servicios principales:
+## APIs y endpoints disponibles
+* Catálogo: `http://localhost:9080/api/v1/productos`
 
-1. **API Gateway (`ms-jardin-gateway`) -> Puerto: 9090**
-   * Actúa como proxy inverso y punto de entrada único.
-   * Incluye filtros de cabecera (`X-Servicio-Destino`) para trazabilidad.
-   * Rutas configuradas: `/api/v1/productos/**` y `/api/v1/ventas/**`
+## Puertos y rutas del API Gateway
+* Puerto: 9090
+* Ruta base: `/api/v1/`
 
-2. **Microservicio Catálogo (`ms-jardin-catalogo`) -> Puerto: 9080**
-   * Gestiona las entidades `Categoria` y `Producto` (Relación Bidireccional).
-   * Expone el endpoint de reducción de stock utilizado por Ventas.
+## Enlaces de Swagger
+* Catálogo: `http://localhost:9080/swagger-ui.html`
+* Ventas: `http://localhost:9081/swagger-ui.html`
 
-3. **Microservicio Ventas (`ms-jardin-ventas`) -> Puerto: 9081**
-   * Gestiona el flujo Maestro-Detalle (`Venta` y `DetalleVenta`).
-   * Actúa como cliente Feign (`CatalogoClient`) para validar y descontar stock remotamente antes de procesar una transacción.
-
-## 🚀 Instrucciones de Ejecución
-
-1. **Base de Datos:**
-   * Ejecutar el script adjunto `script_db_vivero.sql` en MySQL (HeidiSQL/Workbench). 
-   * Esto creará automáticamente las bases de datos `db_jardin_catalogo` y `db_jardin_ventas` con sus respectivas tablas normalizadas y datos de prueba.
-
-2. **Levantar los Microservicios:**
-   * Iniciar los servicios desde el IDE en el siguiente orden estricto:
-     1. `ms-jardin-catalogo`
-     2. `ms-jardin-ventas`
-     3. `ms-jardin-gateway`
-
-## 📚 Documentación de las APIs (Swagger)
-Una vez levantados los servicios, la documentación interactiva está disponible en:
-* **Catálogo:** [http://localhost:9080/swagger-ui/index.html](http://localhost:9080/swagger-ui/index.html)
-* **Ventas:** [http://localhost:9081/swagger-ui/index.html](http://localhost:9081/swagger-ui/index.html)
-
-## 🧪 Cobertura de Pruebas
-Se implementaron pruebas unitarias aisladas con Mockito para asegurar la resiliencia de las reglas de negocio críticas, incluyendo:
-* Validación y actualización transaccional de Stock.
-* Simulación de comunicación de red (Feign) para el procesamiento del Carrito de Compras.
+## Instrucciones para ejecutar y probar el sistema
+1. Clonar el repositorio.
+2. Abrir los proyectos en IntelliJ IDEA.
+3. Ejecutar los servicios en el orden: Catálogo -> Ventas -> Gateway.
+4. Acceder a los endpoints a través del puerto 9090.
