@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/AngeloPastene_EP3_DSY1103_008V.iml" filepath="$PROJECT_DIR$/.idea/AngeloPastene_EP3_DSY1103_008V.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ms-jardin-ventas/ms-jardin-ventas.iml" filepath="$PROJECT_DIR$/ms-jardin-ventas/ms-jardin-ventas.iml" />
     </modules>
   </component>
 </project>

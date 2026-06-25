@@ -99,4 +99,19 @@ public class VentaServiceTest {
         verify(catalogoClient, times(1)).reducirStock(1L, 2);
         verify(ventaRepository, times(1)).save(any(Venta.class));
     }
+    // =================================================================
+    // TEST 3: ELIMINAR VENTA
+    // =================================================================
+    @Test
+    void dadoUnId_cuandoEliminarVenta_entoncesEliminaDelRepositorio() {
+        // Given
+        Long id = 1L;
+        when(ventaRepository.findById(id)).thenReturn(Optional.of(ventaFalsa));
+
+        // When
+        ventaService.eliminarVenta(id);
+
+        // Then
+        verify(ventaRepository, times(1)).delete(ventaFalsa);
+    }
 }
