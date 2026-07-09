@@ -1,0 +1,65 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: jardin-mysql
+    restart: always
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    networks:
+      - jardin-network
+
+  ms-jardin-catalogo:
+    build: ./ms-jardin-catalogo
+    container_name: ms-jardin-catalogo
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/db_jardin_catalogo
+    ports:
+      - "9080:9080"
+    networks:
+      - jardin-network
+
+  ms-jardin-ventas:
+    build: ./ms-jardin-ventas
+    container_name: ms-jardin-ventas
+    depends_on:
+      mysql:
+        condition: service_healthy
+      ms-jardin-catalogo:
+        condition: service_started
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/db_jardin_ventas
+      CATALOGO_API_URL: http://ms-jardin-catalogo:9080/api/v1
+    ports:
+      - "9081:9081"
+    networks:
+      - jardin-network
+
+  ms-jardin-gateway:
+    build: ./ms-jardin-gateway
+    container_name: ms-jardin-gateway
+    depends_on:
+      - ms-jardin-catalogo
+      - ms-jardin-ventas
+    environment:
+      CATALOGO_SERVICE_URL: http://ms-jardin-catalogo:9080
+      VENTAS_SERVICE_URL: http://ms-jardin-ventas:9081
+    ports:
+      - "9090:9090"
+    networks:
+      - jardin-network
+
+networks:
+  jardin-network:
+    driver: bridge

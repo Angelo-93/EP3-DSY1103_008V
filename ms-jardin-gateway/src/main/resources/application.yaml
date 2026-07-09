@@ -9,7 +9,7 @@ spring:
       routes:
         # --- RUTA 1: Catálogo ---
         - id: ruta-catalogo
-          uri: http://localhost:9080
+          uri: ${CATALOGO_SERVICE_URL:http://localhost:9080}
           predicates:
             - Path=/api/v1/productos, /api/v1/productos/**
           filters:
@@ -17,7 +17,7 @@ spring:
 
         # --- RUTA 2: Ventas ---
         - id: ruta-ventas
-          uri: http://localhost:9081
+          uri: ${VENTAS_SERVICE_URL:http://localhost:9081}
           predicates:
             - Path=/api/v1/ventas, /api/v1/ventas/**
           filters:

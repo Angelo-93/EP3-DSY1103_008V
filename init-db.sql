@@ -1,0 +1,2 @@
+CREATE DATABASE IF NOT EXISTS db_jardin_catalogo;
+CREATE DATABASE IF NOT EXISTS db_jardin_ventas;
