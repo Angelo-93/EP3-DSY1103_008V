@@ -1,5 +1,6 @@
 package cl.duoc.ms_jardin_ventas.service;
 
+import feign.FeignException;
 import cl.duoc.ms_jardin_ventas.client.CatalogoClient;
 import cl.duoc.ms_jardin_ventas.dto.DetalleVentaRequestDTO;
 import cl.duoc.ms_jardin_ventas.dto.VentaRequestDTO;
@@ -113,5 +114,65 @@ public class VentaServiceTest {
 
         // Then
         verify(ventaRepository, times(1)).delete(ventaFalsa);
+    }
+    // =================================================================
+    // TEST 4: LISTAR TODAS
+    // =================================================================
+    @Test
+    void cuandoListarTodas_entoncesRetornaListaDeVentas() {
+        // Given
+        when(ventaRepository.findAll()).thenReturn(List.of(ventaFalsa));
+
+        // When
+        List<VentaResponseDTO> resultado = ventaService.listarTodas();
+
+        // Then
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+        assertEquals(18000.0, resultado.get(0).getPrecioTotal());
+        verify(ventaRepository, times(1)).findAll();
+    }
+
+    // =================================================================
+    // TEST 5: ACTUALIZAR VENTA (regla de negocio: no se permite modificar)
+    // =================================================================
+    @Test
+    void dadoIdYRequest_cuandoActualizarVenta_entoncesLanzaExcepcion() {
+        // Given / When
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> ventaService.actualizarVenta(1L, requestFalso));
+
+        // Then
+        assertEquals("Las ventas emitidas no se pueden modificar. Anule la venta (DELETE) y genere una nueva.", ex.getMessage());
+        verifyNoInteractions(ventaRepository);
+    }
+    // =================================================================
+    // TEST 6: STOCK INSUFICIENTE
+    // =================================================================
+    @Test
+    void dadoStockInsuficiente_cuandoGuardarVenta_entoncesLanzaExcepcion() {
+        Map<String, Object> productoFalsoMap = new HashMap<>();
+        productoFalsoMap.put("stock", 1); // Solo queda 1, pero el carrito pide 2
+        productoFalsoMap.put("precio", 9000.0);
+        when(catalogoClient.getProductoById(1L)).thenReturn(productoFalsoMap);
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> ventaService.guardarVenta(requestFalso));
+
+        assertTrue(ex.getMessage().contains("Stock insuficiente"));
+        verify(ventaRepository, never()).save(any());
+    }
+
+    // =================================================================
+    // TEST 7: PRODUCTO NO EXISTE EN CATÁLOGO (FEIGN 404)
+    // =================================================================
+    @Test
+    void dadoProductoInexistenteEnCatalogo_cuandoGuardarVenta_entoncesLanzaExcepcion() {
+        when(catalogoClient.getProductoById(1L)).thenThrow(mock(FeignException.NotFound.class));
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> ventaService.guardarVenta(requestFalso));
+
+        assertTrue(ex.getMessage().contains("no existe"));
     }
 }
