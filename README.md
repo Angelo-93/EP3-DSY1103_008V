@@ -1,8 +1,8 @@
-# 🌿 El Jardín del Ángel - EP3 DSY1103
+# 🌿 El Jardín del Ángel - EFT DSY1103
 
 **Institución:** Duoc UC  
 **Asignatura:** Desarrollo Full Stack I - DSY1103_008V  
-**Evaluación:** Parcial 3
+**Evaluación:** Examen Final Transversal (EFT)
 
 ---
 
@@ -17,7 +17,7 @@ Swagger y pruebas unitarias con JUnit y Mockito.
 ## 👤 Integrantes del Equipo
 | Nombre | Rol |
 |---|---|
-| Angelo Pastene Acevedo | Desarrollo Full Stack - Grupo 7 |
+| Angelo Pastene Acevedo | Desarrollo Full Stack - Grupo 7 (trabajo individual autorizado) |
 
 ---
 
@@ -29,20 +29,21 @@ Swagger y pruebas unitarias con JUnit y Mockito.
 - Implementación de relaciones bidireccionales JPA (@OneToMany / @ManyToOne)
 - Comunicación entre servicios mediante OpenFeign (CatalogoClient)
 - Reglas de negocio: validación y descuento de stock al registrar ventas
-- Documentación técnica con Swagger/OpenAPI
-- Pruebas unitarias con JUnit 5 y Mockito
-- Configuración de Dockerfiles para los 3 servicios
+- Documentación técnica con Swagger/OpenAPI (endpoints, parámetros, códigos de respuesta)
+- Pruebas unitarias con JUnit 5 y Mockito — cobertura medida con JaCoCo (84%+ en catálogo y ventas)
+- Configuración de Dockerfiles multi-stage para los 3 servicios
+- Orquestación completa con Docker Compose (MySQL + los 3 microservicios conectados en red)
 
 ---
 
 ## 🛠️ Tecnologías Utilizadas
 - **Lenguaje:** Java 17
-- **Framework:** Spring Boot 4.0.6 / Spring Boot 3.2.5 (Gateway)
+- **Framework:** Spring Boot 4.0.6 (catálogo/ventas) / Spring Boot 3.2.5 (Gateway)
 - **Arquitectura:** Spring Cloud Gateway, Spring Cloud OpenFeign
-- **Persistencia:** Spring Data JPA, MySQL 8
+- **Persistencia:** Spring Data JPA, MySQL 8, H2 (perfil de test)
 - **Documentación:** Swagger / OpenAPI (springdoc 2.8.5)
-- **Testing:** JUnit 5, Mockito
-- **Contenedores:** Docker
+- **Testing:** JUnit 5, Mockito, JaCoCo (cobertura)
+- **Contenedores:** Docker, Docker Compose
 
 ---
 
@@ -74,11 +75,13 @@ Swagger y pruebas unitarias con JUnit y Mockito.
 |---|---|---|
 | GET | /api/v1/ventas | Listar todas las ventas |
 | GET | /api/v1/ventas/{id} | Buscar venta por ID |
-| POST | /api/v1/ventas | Registrar nueva venta |
+| POST | /api/v1/ventas | Registrar nueva venta (descuenta stock vía Feign) |
+| PUT | /api/v1/ventas/{id} | Actualizar venta (regla de negocio: no permitido, retorna 400) |
+| DELETE | /api/v1/ventas/{id} | Eliminar venta |
 
 ---
 
-## 🚪 Puertos y Rutas del API Gateway (Puerto 9090)
+## 🚪 Rutas del API Gateway (Puerto 9090)
 
 | Ruta Gateway | Redirige a |
 |---|---|
@@ -89,23 +92,49 @@ Swagger y pruebas unitarias con JUnit y Mockito.
 
 ---
 
-## 📚 Enlaces de Swagger
+## 📚 Enlaces de Swagger (local)
 - **Catálogo:** http://localhost:9080/swagger-ui/index.html
 - **Ventas:** http://localhost:9081/swagger-ui/index.html
 
 ---
 
-## 🚀 Instrucciones para Ejecutar y Probar el Sistema
+## 🐳 Ejecución con Docker Compose (recomendado)
+
+Levanta MySQL + los 3 microservicios ya conectados entre sí, con un solo comando.
+
+**Requisitos:** Docker Desktop instalado y corriendo.
+
+```bash
+docker-compose up --build
+```
+
+Esto construye las imágenes desde el código fuente (Maven multi-stage) y levanta:
+- MySQL 8 con las bases `db_jardin_catalogo` y `db_jardin_ventas` ya creadas
+- `ms-jardin-catalogo` en el puerto 9080
+- `ms-jardin-ventas` en el puerto 9081
+- `ms-jardin-gateway` en el puerto 9090
+
+Para apagar todo:
+```bash
+docker-compose down
+```
+Para apagar y borrar también los datos (reinicia la base de datos desde cero):
+```bash
+docker-compose down -v
+```
+
+---
+
+## 🚀 Ejecución Local (desde el IDE, sin Docker)
 
 ### 1. Base de Datos
-Ejecutar el script `script_db_vivero.sql` en MySQL (HeidiSQL o Workbench).  
-Esto crea automáticamente `db_jardin_catalogo` y `db_jardin_ventas` con datos de prueba.
+Tener MySQL corriendo localmente (ej. Laragon, XAMPP). Las bases y tablas se crean automáticamente al levantar cada servicio (`ddl-auto`), con datos de prueba cargados por `DataLoader`.
 
 ### 2. Levantar los Servicios (orden estricto)
-1. Iniciar MySQL (Laragon u otro)
-2. Ejecutar `ms-jardin-catalogo` → esperar que levante en puerto 9080
-3. Ejecutar `ms-jardin-ventas` → esperar que levante en puerto 9081
-4. Ejecutar `ms-jardin-gateway` → levanta en puerto 9090
+1. Iniciar MySQL local
+2. Ejecutar `ms-jardin-catalogo` → espera que levante en el puerto 9080
+3. Ejecutar `ms-jardin-ventas` → espera que levante en el puerto 9081
+4. Ejecutar `ms-jardin-gateway` → levanta en el puerto 9090
 
 ### 3. Probar el Sistema
 - Swagger Catálogo: http://localhost:9080/swagger-ui/index.html
@@ -114,6 +143,16 @@ Esto crea automáticamente `db_jardin_catalogo` y `db_jardin_ventas` con datos d
 
 ---
 
-## 🧪 Pruebas Unitarias
-- `ProductoServiceTest`: 6 tests (listar, buscar, guardar, actualizar, eliminar, reducirStock)
-- `VentaServiceTest`: 2 tests (buscar por ID, guardar venta con Feign mockeado)
+## 🧪 Pruebas Unitarias y Cobertura
+
+| Microservicio | Tests | Cobertura (JaCoCo) |
+|---|---|---|
+| ms-jardin-catalogo | `ProductoServiceTest` (6) + `ProductoControllerTest` (7) + contexto (1) | 84% |
+| ms-jardin-ventas | `VentaServiceTest` (7) + `VentaControllerTest` (7) + contexto (1) | 84% |
+| ms-jardin-gateway | Test de contexto | Sin lógica de negocio propia que testear |
+
+Para generar el reporte de cobertura de un microservicio:
+```bash
+mvn test
+```
+El reporte queda en `target/site/jacoco/index.html` de cada microservicio.
