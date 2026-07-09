@@ -29,7 +29,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse> handleRuntimeException(RuntimeException ex) {
         // Si el mensaje habla de "no encontrado", devolvemos 404, si no, 400 Bad Request
-        HttpStatus status = ex.getMessage().toLowerCase().contains("no encontrado") ? HttpStatus.NOT_FOUND : HttpStatus.BAD_REQUEST;
+        HttpStatus status = ex.getMessage().toLowerCase().contains("no encontr") ? HttpStatus.NOT_FOUND : HttpStatus.BAD_REQUEST;
         ApiResponse response = new ApiResponse(status.value(), ex.getMessage());
         return ResponseEntity.status(status).body(response);
     }
