@@ -175,4 +175,23 @@ public class VentaServiceTest {
 
         assertTrue(ex.getMessage().contains("no existe"));
     }
+
+    // =================================================================
+    // CAMBIO INDIVIDUAL EFT: VENTA NO ENCONTRADA
+    // =================================================================
+    @Test
+    void dadoIdInexistente_cuandoBuscarPorId_entoncesLanzaExcepcion() {
+        // Given: configuramos el mock para simular que esa venta no existe en la BD
+        Long idInexistente = 99L;
+        when(ventaRepository.findById(idInexistente)).thenReturn(Optional.empty());
+
+        // When / Then: ejecutamos el método y verificamos que lanza la excepción esperada
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> ventaService.buscarPorId(idInexistente));
+
+        assertEquals("Error: Venta no encontrada", ex.getMessage());
+
+        // Verify: comprobamos que el repository sí fue consultado con ese id
+        verify(ventaRepository, times(1)).findById(idInexistente);
+    }
 }
